@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -47,7 +47,7 @@ build_meson_package() {
 
     mkdir -p "windows-build-deps/${name}-build"
     meson setup "$(realpath -- "windows-build-deps/${name}-build")" "$(realpath "windows-build-deps/${name}-${version}")" \
-        --prefix "${winprefix}" --buildtype release --cross-file meson-mingw-cross.txt -Dprefer_static=true "$@"
+        --prefix "${winprefix}" --buildtype release --cross-file "$(realpath -- meson-mingw-cross.txt)" -Dprefer_static=true "$@"
 
     (cd "windows-build-deps/${name}-build" && meson install)
 }
@@ -69,6 +69,7 @@ EOF
 fi
 
 export PATH="${winprefix}/bin:${PATH}"
+
 
 download_and_unpack_windows_dependency "https://github.com/harfbuzz/harfbuzz/releases/download/${harfbuzz_version}/harfbuzz-${harfbuzz_version}.tar.xz"
 download_and_unpack_windows_dependency "https://download.savannah.gnu.org/releases/freetype/freetype-${freetype_version}.tar.xz"
@@ -98,10 +99,11 @@ fi
 
 make -C "windows-build-deps/libass-build" -j8 install
 
+mkdir -p "windows-build-deps/libplacebo-build"
 meson setup "$(realpath -- "windows-build-deps/libplacebo-build")" "$(realpath -- "windows-build-deps/libplacebo-${libplacebo_version}")" \
     --prefix "${winprefix}" --buildtype release --cross-file meson-mingw-cross.txt --default-library static \
     -Dvulkan=disabled -Dopengl=enabled -Dd3d11=disabled -Dlcms=disabled -Ddovi=disabled -Ddemos=false \
-    -Dunwind=disabled -Dxxhash=disabled -Dglslang=disabled -Dshaderc=disabled --reconfigure
+    -Dunwind=disabled -Dxxhash=disabled -Dglslang=disabled -Dshaderc=disabled
 
 (cd "windows-build-deps/libplacebo-build" && meson install)
 
